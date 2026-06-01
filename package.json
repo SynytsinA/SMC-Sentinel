@@ -1,8 +1,8 @@
 {
   "name": "smc-local-bot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Autonomous Forex (EUR/USD) market monitoring bot driven by a local Gemma 4 LLM via Ollama and TypeScript.",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf dist && find . -name '*.js' -not -path './node_modules/*' -delete -o -name '*.d.ts' -not -path './node_modules/*' -delete -o -name '*.map' -not -path './node_modules/*' -delete",
@@ -10,8 +10,8 @@
     "start": "node dist/index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Artem Synytsin",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "axios": "^1.16.1",
