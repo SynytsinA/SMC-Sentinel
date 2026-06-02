@@ -24,18 +24,20 @@ export class MarketDataService {
         this.apiClient.get('/klines', { params: { symbol: 'EURUSDT', interval: '15m', limit: 40 } })
       ]);
 
-      const candlesH1 = this.parseBinanceData(h1Response.data);
-      const candlesM15 = this.parseBinanceData(m15Response.data);
+      // Binance returns the currently forming candle as the last element.
+      // We slice(0, -1) to remove it, ensuring the LLM only sees FULLY CLOSED candles.
+      const fullyClosedH1 = this.parseBinanceData(h1Response.data).slice(0, -1);
+      const fullyClosedM15 = this.parseBinanceData(m15Response.data).slice(0, -1);
 
       console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (H1) ===');
-      console.log(JSON.stringify(candlesH1.slice(-3), null, 2));
+      console.log(JSON.stringify(fullyClosedH1.slice(-3), null, 2));
       console.log('========================================\n');
 
       console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (M15) ===');
-      console.log(JSON.stringify(candlesM15.slice(-3), null, 2));
+      console.log(JSON.stringify(fullyClosedM15.slice(-3), null, 2));
       console.log('========================================\n');
 
-      return { candlesH1, candlesM15 };
+      return { candlesH1: fullyClosedH1, candlesM15: fullyClosedM15 };
     } catch (error) {
       logError('Error fetching MTF market data from Binance:', error);
       return { candlesH1: [], candlesM15: [] };
