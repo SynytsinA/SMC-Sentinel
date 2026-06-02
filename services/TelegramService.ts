@@ -20,14 +20,15 @@ export class TelegramService {
    * Sends a message to the specified chat.
    * @param message Message text
    */
-  public async sendMessage(message: string): Promise<void> {
+  public async sendMessage(message: string, useMarkdown: boolean = true): Promise<void> {
     if (!this.chatId) {
       logError('CHAT_ID is not specified for sending messages.');
       return;
     }
 
     try {
-      await this.bot.sendMessage(this.chatId, message, { parse_mode: 'Markdown' });
+      const options = useMarkdown ? { parse_mode: 'Markdown' as const } : {};
+      await this.bot.sendMessage(this.chatId, message, options);
       logInfo('Message sent to Telegram.');
     } catch (error) {
       logError('Error sending message to Telegram:', error);
@@ -49,6 +50,32 @@ export class TelegramService {
       } catch (error) {
         logError('Error in /analyze handler:', error);
         await this.bot.sendMessage(chatId, 'An error occurred during analysis.');
+      }
+    });
+  }
+
+  /**
+   * Registers a handler for general text messages (custom prompts).
+   * @param callback Function to be called upon receiving a non-command text message
+   */
+  public registerCustomPromptHandler(callback: (chatId: number, text: string) => Promise<void>): void {
+    this.bot.on('message', async (msg) => {
+      const chatId = msg.chat.id;
+      const text = msg.text;
+
+      // Ignore if there is no text or if it is a command starting with '/'
+      if (!text || text.startsWith('/')) {
+        return;
+      }
+
+      logInfo(`Received custom prompt from chat ${chatId}: "${text}"`);
+      
+      try {
+        await this.bot.sendMessage(chatId, '🤖 Processing your custom request with Gemma 4...');
+        await callback(chatId, text);
+      } catch (error) {
+        logError('Error in custom prompt handler:', error);
+        await this.bot.sendMessage(chatId, 'An error occurred while processing your custom request.');
       }
     });
   }

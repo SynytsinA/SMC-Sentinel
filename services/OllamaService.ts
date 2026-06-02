@@ -60,4 +60,35 @@ export class OllamaService {
       };
     }
   }
+
+  /**
+   * Analyzes market data along with a custom user prompt using the local Ollama model.
+   * @param marketData Array of typed candlesticks
+   * @param userPrompt The custom question or prompt from the user
+   */
+  public async analyzeWithCustomPrompt(marketData: ICandle[], userPrompt: string): Promise<string> {
+    try {
+      logInfo(`Custom request sent to Ollama (${this.modelName})...`);
+      
+      const prompt = `Context (Current Market Candles in JSON): ${JSON.stringify(marketData)}\n\nUser Question: ${userPrompt}`;
+      
+      const payload: IOllamaRequest = {
+        model: this.modelName,
+        prompt: prompt,
+        system: this.systemInstruction,
+        stream: false
+      };
+
+      const response = await axios.post<IOllamaResponse>(this.apiUrl, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 180000
+      });
+
+      logInfo('Custom response from Ollama successfully received.');
+      return response.data.response.trim();
+    } catch (error) {
+      logError('Error processing custom prompt with local Ollama model:', error);
+      return 'Error processing your custom request.';
+    }
+  }
 }

@@ -39,6 +39,18 @@ export class AppEngine {
       this.telegramService.sendMessage(`**On-demand Analysis:**\n\n${result.verdict}`);
     });
 
+    // Register custom prompt handler in Telegram
+    this.telegramService.registerCustomPromptHandler(async (chatId: number, text: string) => {
+      const data = await this.marketDataService.fetchMarketData();
+      if (data.length === 0) {
+        this.telegramService.sendMessage('Error: failed to fetch market data for your query.');
+        return;
+      }
+
+      const reply = await this.ollamaService.analyzeWithCustomPrompt(data, text);
+      this.telegramService.sendMessage(`**Custom Response:**\n\n${reply}`, false);
+    });
+
     // Run the first cycle immediately
     this.runTradingBotCycle();
 
