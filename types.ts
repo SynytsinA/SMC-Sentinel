@@ -8,6 +8,11 @@ export interface ICandle {
   volume: number;
 }
 
+export interface IMtfMarketData {
+  candlesH1: ICandle[];
+  candlesM15: ICandle[];
+}
+
 export interface IOllamaRequest {
   model: string;
   prompt: string;

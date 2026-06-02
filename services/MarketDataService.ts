@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { ICandle } from '../types.js';
+import { ICandle, IMtfMarketData } from '../types.js';
 import { logInfo, logError } from '../utils/logger.js';
 
 export class MarketDataService {
@@ -13,46 +13,55 @@ export class MarketDataService {
   }
 
   /**
-   * Fetches real-time 15-minute candlestick data for EURUSDT from Binance API.
-   * @param limit Number of recent candles to return (default 50)
+   * Fetches real-time multi-timeframe (H1 + M15) candlestick data for EURUSDT from Binance API.
    */
-  public async fetchMarketData(limit: number = 50): Promise<ICandle[]> {
+  public async fetchMarketData(): Promise<IMtfMarketData> {
+    logInfo(`Fetching MTF (H1 + M15) real-time market data for EUR/USDT from Binance API...`);
+    
     try {
-      logInfo(`Fetching real-time market data for EUR/USDT from Binance API...`);
+      const [h1Response, m15Response] = await Promise.all([
+        this.apiClient.get('/klines', { params: { symbol: 'EURUSDT', interval: '1h', limit: 30 } }),
+        this.apiClient.get('/klines', { params: { symbol: 'EURUSDT', interval: '15m', limit: 40 } })
+      ]);
 
-      const response = await this.apiClient.get('/klines', {
-        params: {
-          symbol: 'EURUSDT',
-          interval: '15m',
-          limit: limit
-        }
-      });
+      const candlesH1 = this.parseBinanceData(h1Response.data);
+      const candlesM15 = this.parseBinanceData(m15Response.data);
 
-      // Strict guard clause: check if the response is an array
-      if (!response.data || !Array.isArray(response.data)) {
-        logError(`Binance API returned unexpected structure or error: ${JSON.stringify(response.data)}`);
-        return [];
-      }
+      console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (H1) ===');
+      console.log(JSON.stringify(candlesH1.slice(-3), null, 2));
+      console.log('========================================\n');
 
-      // Map Binance array-of-arrays to ICandle objects
-      const candles: ICandle[] = response.data.map((candle: any[]) => ({
-        timestamp: candle[0],
-        time: new Date(candle[0]).toLocaleTimeString('uk-UA', {
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'Europe/Kyiv'
-        }),
-        open: parseFloat(candle[1]),
-        high: parseFloat(candle[2]),
-        low: parseFloat(candle[3]),
-        close: parseFloat(candle[4]),
-        volume: parseFloat(candle[5])
-      }));
+      console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (M15) ===');
+      console.log(JSON.stringify(candlesM15.slice(-3), null, 2));
+      console.log('========================================\n');
 
-      return candles;
+      return { candlesH1, candlesM15 };
     } catch (error) {
-      logError('Error fetching market data from Binance:', error);
+      logError('Error fetching MTF market data from Binance:', error);
+      return { candlesH1: [], candlesM15: [] };
+    }
+  }
+
+  private parseBinanceData(data: any): ICandle[] {
+    // Strict guard clause: check if the response is an array
+    if (!data || !Array.isArray(data)) {
+      logError(`Binance API returned unexpected structure or error: ${JSON.stringify(data)}`);
       return [];
     }
+
+    // Map Binance array-of-arrays to ICandle objects
+    return data.map((candle: any[]) => ({
+      timestamp: candle[0],
+      time: new Date(candle[0]).toLocaleTimeString('uk-UA', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Kyiv'
+      }),
+      open: parseFloat(candle[1]),
+      high: parseFloat(candle[2]),
+      low: parseFloat(candle[3]),
+      close: parseFloat(candle[4]),
+      volume: parseFloat(candle[5])
+    }));
   }
 }

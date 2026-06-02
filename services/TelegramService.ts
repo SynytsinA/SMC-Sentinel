@@ -18,21 +18,31 @@ export class TelegramService {
 
   /**
    * Sends a message to the specified chat.
+   * @param chatId The Telegram chat ID
    * @param message Message text
+   * @param useMarkdown Whether to use Markdown parsing
+   */
+  public async sendMessageToChat(chatId: number | string, message: string, useMarkdown: boolean = true): Promise<void> {
+    try {
+      const options = useMarkdown ? { parse_mode: 'Markdown' as const } : {};
+      await this.bot.sendMessage(chatId, message, options);
+      logInfo(`Message sent to Telegram chat ${chatId}.`);
+    } catch (error) {
+      logError(`Error sending message to Telegram chat ${chatId}:`, error);
+    }
+  }
+
+  /**
+   * Sends a message to the default admin chat.
+   * @param message Message text
+   * @param useMarkdown Whether to use Markdown parsing
    */
   public async sendMessage(message: string, useMarkdown: boolean = true): Promise<void> {
     if (!this.chatId) {
       logError('CHAT_ID is not specified for sending messages.');
       return;
     }
-
-    try {
-      const options = useMarkdown ? { parse_mode: 'Markdown' as const } : {};
-      await this.bot.sendMessage(this.chatId, message, options);
-      logInfo('Message sent to Telegram.');
-    } catch (error) {
-      logError('Error sending message to Telegram:', error);
-    }
+    await this.sendMessageToChat(this.chatId, message, useMarkdown);
   }
 
   /**
@@ -40,16 +50,49 @@ export class TelegramService {
    * @param callback Function to be called upon receiving the /analyze command
    */
   public registerAnalyzeCommand(callback: (chatId: number) => Promise<void>): void {
-    this.bot.onText(/\/analyze/, async (msg) => {
+    this.bot.onText(/^\/analyze/, async (msg) => {
       const chatId = msg.chat.id;
       logInfo(`Received /analyze command from chat ${chatId}`);
       
       try {
-        await this.bot.sendMessage(chatId, '🔍 Reading the terminal, please wait a second...');
         await callback(chatId);
       } catch (error) {
-        logError('Error in /analyze handler:', error);
-        await this.bot.sendMessage(chatId, 'An error occurred during analysis.');
+        logError('Error in /analyze command handler:', error);
+        await this.sendMessageToChat(chatId, 'An error occurred while analyzing the market.');
+      }
+    });
+  }
+
+  /**
+   * Registers a handler for the subscribe command.
+   * @param callback Function to be called upon receiving the /subscribe command
+   */
+  public registerSubscribeCommand(callback: (chatId: number) => Promise<void>): void {
+    this.bot.onText(/^\/subscribe/, async (msg) => {
+      const chatId = msg.chat.id;
+      logInfo(`Received /subscribe command from chat ${chatId}`);
+      try {
+        await callback(chatId);
+      } catch (error) {
+        logError('Error in /subscribe command handler:', error);
+        await this.sendMessageToChat(chatId, 'An error occurred while subscribing.');
+      }
+    });
+  }
+
+  /**
+   * Registers a handler for the unsubscribe command.
+   * @param callback Function to be called upon receiving the /unsubscribe command
+   */
+  public registerUnsubscribeCommand(callback: (chatId: number) => Promise<void>): void {
+    this.bot.onText(/^\/unsubscribe/, async (msg) => {
+      const chatId = msg.chat.id;
+      logInfo(`Received /unsubscribe command from chat ${chatId}`);
+      try {
+        await callback(chatId);
+      } catch (error) {
+        logError('Error in /unsubscribe command handler:', error);
+        await this.sendMessageToChat(chatId, 'An error occurred while unsubscribing.');
       }
     });
   }
@@ -71,11 +114,11 @@ export class TelegramService {
       logInfo(`Received custom prompt from chat ${chatId}: "${text}"`);
       
       try {
-        await this.bot.sendMessage(chatId, '🤖 Processing your custom request with Gemma 4...');
+        await this.sendMessageToChat(chatId, '🤖 Processing your custom request with Gemma 4...');
         await callback(chatId, text);
       } catch (error) {
         logError('Error in custom prompt handler:', error);
-        await this.bot.sendMessage(chatId, 'An error occurred while processing your custom request.');
+        await this.sendMessageToChat(chatId, 'An error occurred while processing your custom request.');
       }
     });
   }
