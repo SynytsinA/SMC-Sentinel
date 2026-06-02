@@ -10,16 +10,16 @@ SMC-Sentinel is a strictly typed, modular Node.js & TypeScript application desig
 
 *   🔒 **Local LLM Integration (Zero Cloud Cost & Privacy):**
     Utilizes the highly capable Google Gemma 4 (26B parameters) locally on Apple Silicon (M-series Macs). This ensures zero API costs, absolute privacy of your trading strategies, and zero external dependencies on cloud providers like OpenAI or Anthropic.
-*   ⚡ **Lightning-Fast Data Pipeline:**
-    Asynchronously fetches 15-minute candlestick data from a public, high-speed REST API. Data is cleanly parsed into a strictly typed JSON array for efficient processing.
-*   🧠 **Advanced SMC Strategy Engine:**
-    Equipped with a finely-tuned, Chain-of-Thought (CoT) system prompt designed to precisely identify critical market footprints:
+*   ⚡ **Lightning-Fast Real-Time Data Pipeline:**
+    Asynchronously fetches Multi-Timeframe (MTF) candlestick data (H1 and M15) from the public Binance REST API. Data is cleanly parsed into a strictly typed JSON array and synchronized with the Kyiv timezone for accurate institutional session analysis.
+*   🧠 **Advanced MTF SMC Strategy Engine:**
+    Equipped with a finely-tuned, Chain-of-Thought (CoT) system prompt designed to precisely identify critical market footprints across multiple timeframes (HTF Bias + LTF Entry Confirmation):
     *   **Liquidity Sweeps (SFP):** Detection of stops being triggered at Equal Highs/Lows.
     *   **Market Structure Shifts (MSS):** Identification of trend reversals via full-bodied structural breaks.
     *   **Fair Value Gaps (FVG):** Pinpointing three-candle imbalances.
     *   **Premium/Discount Zones:** Evaluating the 50% equilibrium of the current trading range (buys exclusively permitted in the Discount zone).
-*   📱 **Telegram Core UI:**
-    Provides real-time notifications via a robust cron-like interval scheduling system. It also supports on-demand manual analysis directly from your mobile device using the `/analyze` command.
+*   📱 **Smart Telegram Subscriptions & UI:**
+    Provides an interactive subscription system (`/subscribe`, `/unsubscribe`) with persistent state storage. A Smart Scheduler dynamically synchronizes the scanning cycles to execute exactly at the close of 15-minute market intervals, sending real-time periodic updates to all active subscribers. It also supports on-demand manual analysis (`/analyze`) and custom conversational prompts.
 
 ---
 
