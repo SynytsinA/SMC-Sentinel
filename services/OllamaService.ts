@@ -30,9 +30,13 @@ export class OllamaService {
        - Volume Imbalance (VI): Identify zones where candle bodies do not overlap, but their wicks (shadows) intersect. Treat VI as a high-probability institutional target and mitigation POI.
        
     4. Premium/Discount & OTE (Optimal Trade Entry):
-       - Use Fibonacci levels to map the current Dealing Range (from Key Low to Key High).
-       - Equilibrium (0.5) divides the range into Premium (Shorts Only) and Discount (Buys Only).
-       - CRITICAL: For Long positions, look for execution strictly when the price retraces deeper into the OTE Zone (0.618, 0.705, and 0.786 Fibonacci levels) inside the Discount zone.
+    - Map the current Dealing Range based on the HTF/LTF trend direction:
+      * For Bullish setups: Pull Fibonacci from Key Low to Key High.
+      * For Bearish setups: Pull Fibonacci from Key High to Key Low.
+    - Equilibrium (0.5) strictly divides the range: Premium (Shorts Only) and Discount (Buys Only).
+    - CRITICAL EXECUTION FILTERS:
+      * Long Positions: Consider entries ONLY within the Discount zone, strictly when the price retraces deeper into the OTE Zone (0.618, 0.705, and 0.786 Fibonacci levels).
+      * Short Positions: Consider entries ONLY within the Premium zone, strictly when the price retraces deeper into the OTE Zone (0.618, 0.705, and 0.786 Fibonacci levels).
        
     5. Manipulation Ranges (STB & BTS):
        - Identify STB (Sell to Buy) zones before bullish expansion and BTS (Buy to Sell) zones before bearish collapse. Treat the entire range of the initial manipulation candle(s) as a primary POI for future Mitigation entries.
