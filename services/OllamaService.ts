@@ -78,7 +78,7 @@ export class OllamaService {
 
       const response = await axios.post<IOllamaResponse>(this.apiUrl, payload, {
         headers: { 'Content-Type': 'application/json' },
-        timeout: 180000
+        timeout: 0 // Unlimited timeout for local LLM to process large MTF context
       });
 
       const verdict = response.data.response.trim();
@@ -90,8 +90,12 @@ export class OllamaService {
         hasSetup,
         verdict
       };
-    } catch (error) {
-      logError('Error calling the local Ollama model:', error);
+    } catch (error: any) {
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        logError('Ollama request timed out or was aborted. The model might be overloaded.', error.message);
+      } else {
+        logError('Error calling the local Ollama model:', error);
+      }
       return {
         hasSetup: false,
         verdict: 'Error calling the local model.'
@@ -126,13 +130,17 @@ export class OllamaService {
 
       const response = await axios.post<IOllamaResponse>(this.apiUrl, payload, {
         headers: { 'Content-Type': 'application/json' },
-        timeout: 180000
+        timeout: 0
       });
 
       logInfo('Custom response from Ollama successfully received.');
       return response.data.response.trim();
-    } catch (error) {
-      logError('Error processing custom prompt with local Ollama model:', error);
+    } catch (error: any) {
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        logError('Custom Ollama request timed out or was aborted.', error.message);
+      } else {
+        logError('Error processing custom prompt with local Ollama model:', error);
+      }
       return 'Error processing your custom request.';
     }
   }
