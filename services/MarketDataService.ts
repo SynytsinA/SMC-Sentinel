@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import * as fs from 'fs/promises';
 import { ICandle, IMtfMarketData } from '../types.js';
 import { logInfo, logError } from '../utils/logger.js';
 
@@ -64,6 +65,26 @@ export class MarketDataService {
         console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (M15) ===');
         console.log(JSON.stringify(fullyClosedM15.slice(-3), null, 2));
         console.log('========================================\n');
+
+        // Write the data to a JSON file for manual LLM analysis
+        try {
+          const fetchedAtKyiv = new Date().toLocaleString('uk-UA', {
+            timeZone: 'Europe/Kyiv'
+          });
+          const fileContent = {
+            info: "This file contains the latest market data for EUR/USD. Only fully closed candles are included. Time is formatted in Europe/Kyiv timezone.",
+            symbol: "EUR/USD",
+            fetched_at: fetchedAtKyiv,
+            candles_h1_count: fullyClosedH1.length,
+            candles_m15_count: fullyClosedM15.length,
+            candles_h1: fullyClosedH1,
+            candles_m15: fullyClosedM15
+          };
+          await fs.writeFile('latest_candles.json', JSON.stringify(fileContent, null, 2), 'utf-8');
+          logInfo('Latest candlestick data written to latest_candles.json');
+        } catch (writeError: any) {
+          logError('Failed to write market data to latest_candles.json:', writeError.message);
+        }
 
         return { candlesH1: fullyClosedH1, candlesM15: fullyClosedM15 };
       } catch (error: any) {
