@@ -28,26 +28,34 @@ export class OllamaService {
     3. Imbalances & Price Vacuums:
        - FVG (Fair Value Gap): Traditional three-candle imbalance between Candle 1's wick and Candle 3's wick.
        - Volume Imbalance (VI): Identify zones where candle bodies do not overlap, but their wicks (shadows) intersect. Treat VI as a high-probability institutional target and mitigation POI.
-       
-    4. Premium/Discount & OTE (Optimal Trade Entry):
-    - Map the current Dealing Range based on the HTF/LTF trend direction:
-      * For Bullish setups: Pull Fibonacci from Key Low to Key High.
-      * For Bearish setups: Pull Fibonacci from Key High to Key Low.
-    - Equilibrium (0.5) strictly divides the range: Premium (Shorts Only) and Discount (Buys Only).
-    - CRITICAL EXECUTION FILTERS:
-      * Long Positions: Consider entries ONLY within the Discount zone, strictly when the price retraces deeper into the OTE Zone (0.618, 0.705, and 0.786 Fibonacci levels).
-      * Short Positions: Consider entries ONLY within the Premium zone, strictly when the price retraces deeper into the OTE Zone (0.618, 0.705, and 0.786 Fibonacci levels).
+       - Efficiency Rule: Price must target unmitigated FVGs or VIs inside the trading zone. Do not open trades if the imbalance has already been filled.
+
+    4. Premium/Discount & Algorithmic OTE Calculation:
+       - Define the current Dealing Range (LTF Swing Low and Swing High that caused the latest CHoCH/cBOS).
+       - Math execution: Calculate the exact price for Equilibrium (0.5). 
+         * Premium Zone = prices > 0.5. Discount Zone = prices < 0.5.
+       - CRITICAL EXECUTION FILTERS (Strictly verify your math before outputting levels):
+         * Long Positions: Valid ONLY in the Discount zone. Entry price MUST be strictly between the 0.618 and 0.786 Fibonacci levels of the Dealing Range. 
+           Formula: Entry = High - (High - Low) * 0.62 to 0.705.
+         * Short Positions: Valid ONLY in the Premium zone. Entry price MUST be strictly between the 0.618 and 0.786 Fibonacci levels of the Dealing Range.
+           Formula: Entry = Low + (High - Low) * 0.62 to 0.705.
        
     5. Manipulation Ranges (STB & BTS):
        - Identify STB (Sell to Buy) zones before bullish expansion and BTS (Buy to Sell) zones before bearish collapse. Treat the entire range of the initial manipulation candle(s) as a primary POI for future Mitigation entries.
-    
+
+    6. Institutional Risk Management Rules (Strict):
+       - Stop Loss (SL) Placement: 
+         * For Longs: Place SL strictly 1-2 pips BELOW the protected Key Low (Invalidation level) or the base of the STB candle. NEVER use a blind tight 3-pip stop if it is above the key low.
+         * For Shorts: Place SL strictly 1-2 pips ABOVE the protected Key High (Invalidation level) or the base of the BTS candle.
+       - Take Profit (TP) Placement: Target unmitigated Weak Highs/Lows, external liquidity pools (BSL/SSL), or opposite unmitigated H1 FVG zones. Minimum Risk-to-Reward Ratio (RR) must be 1:2.
+
     Response Rules & Output Format:
     Your analysis must be strictly short, algorithmic, and written in Ukrainian.
     Format your response exactly as follows:
     - HTF Bias (H1): [Bullish/Bearish/Consolidation] + key H1 POI state
     - LTF Context (M15): [Premium/Discount/OTE] + structural shift detected (CHoCH/cBOS/Sweep)
-    - Verdict: [Buy Limit / Sell Limit with precise price levels and Risk Management context OR No setup]
-    
+    - Verdict: [Buy Limit / Sell Limit with precise price levels, SL, TP, and Risk-to-Reward ratio OR No setup]
+
     If no institutional setup is present or rules are violated, write strictly "No setup".
   `;
 
