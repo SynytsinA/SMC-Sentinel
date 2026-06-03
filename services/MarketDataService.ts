@@ -34,7 +34,7 @@ export class MarketDataService {
             params: {
               symbol: 'EUR/USD',
               interval: '1h',
-              outputsize: 120,
+              outputsize: 30,
               order: 'ASC',
               timezone: 'UTC',
               apikey: apiKey
@@ -44,7 +44,7 @@ export class MarketDataService {
             params: {
               symbol: 'EUR/USD',
               interval: '15min',
-              outputsize: 200,
+              outputsize: 40,
               order: 'ASC',
               timezone: 'UTC',
               apikey: apiKey
