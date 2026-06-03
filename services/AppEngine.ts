@@ -147,6 +147,18 @@ export class AppEngine {
   private async runTradingBotCycle(): Promise<void> {
     logInfo('⚡️ Market scanning activated...');
     try {
+      const now = new Date();
+      const day = now.getDay(); // 0 = Неділя, 5 = П'ятниця, 6 = Субота
+      const hour = now.getHours();
+
+      // Форекс закритий: п'ятниця після 23:00, вся субота, і неділя до 23:00
+      const isWeekend = (day === 5 && hour >= 23) || day === 6 || (day === 0 && hour < 23);
+
+      if (isWeekend) {
+        logInfo('Forex market is closed for the weekend. Skipping scanning cycle to save resources.');
+        return;
+      }
+
       const data = await this.marketDataService.fetchMarketData();
       if (data.candlesH1.length === 0 || data.candlesM15.length === 0) {
         logInfo('Market data not received, cycle skipped.');

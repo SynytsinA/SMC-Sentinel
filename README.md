@@ -68,6 +68,7 @@ MODEL_NAME=gemma4:26b
 OLLAMA_API_URL=http://localhost:11434/api/generate
 TELEGRAM_TOKEN=your_telegram_bot_token_here
 TELEGRAM_CHAT_ID=your_personal_chat_id_here
+TWELVE_DATA_API_KEY=your_twelve_data_api_key_here
 ```
 
 ### 4. Build and Run
