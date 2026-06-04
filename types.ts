@@ -5,7 +5,6 @@ export interface ICandle {
   high: number;
   low: number;
   close: number;
-  volume: number;
 }
 
 export interface IMtfMarketData {

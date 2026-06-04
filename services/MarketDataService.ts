@@ -35,7 +35,7 @@ export class MarketDataService {
             params: {
               symbol: 'EUR/USD',
               interval: '1h',
-              outputsize: 30,
+              outputsize: 50,
               order: 'ASC',
               timezone: 'UTC',
               apikey: apiKey
@@ -121,7 +121,6 @@ export class MarketDataService {
       const high = val.high;
       const low = val.low;
       const close = val.close;
-      const volume = val.volume ?? '0';
 
       if (
         !val.datetime ||
@@ -151,8 +150,7 @@ export class MarketDataService {
         open: Number(Number(open).toFixed(5)),
         high: Number(Number(high).toFixed(5)),
         low: Number(Number(low).toFixed(5)),
-        close: Number(Number(close).toFixed(5)),
-        volume: Number(volume)
+        close: Number(Number(close).toFixed(5))
       });
     }
 
