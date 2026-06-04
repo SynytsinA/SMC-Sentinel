@@ -53,10 +53,21 @@ export class MarketDataService {
           })
         ]);
 
-        // Twelve Data returns the currently forming candle as the last element.
-        // We slice(0, -1) to remove it, ensuring the LLM only sees FULLY CLOSED candles.
-        const fullyClosedH1 = this.parseTwelveData(h1Response.data).slice(0, -1);
-        const fullyClosedM15 = this.parseTwelveData(m15Response.data).slice(0, -1);
+        const parsedH1 = this.parseTwelveData(h1Response.data);
+        const parsedM15 = this.parseTwelveData(m15Response.data);
+
+        const now = new Date();
+        const currentH1Start = Math.floor(now.getTime() / (60 * 60 * 1000)) * (60 * 60 * 1000);
+        const currentM15Start = Math.floor(now.getTime() / (15 * 60 * 1000)) * (15 * 60 * 1000);
+
+        // If the last candle belongs to the currently forming interval, slice it off.
+        const fullyClosedH1 = parsedH1.length > 0 && parsedH1[parsedH1.length - 1].timestamp >= currentH1Start
+          ? parsedH1.slice(0, -1)
+          : parsedH1;
+
+        const fullyClosedM15 = parsedM15.length > 0 && parsedM15[parsedM15.length - 1].timestamp >= currentM15Start
+          ? parsedM15.slice(0, -1)
+          : parsedM15;
 
         console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (H1) ===');
         console.log(JSON.stringify(fullyClosedH1.slice(-3), null, 2));

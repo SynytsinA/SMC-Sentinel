@@ -9,7 +9,7 @@ import { logInfo, logError } from './utils/logger.js';
 dotenv.config();
 
 const OLLAMA_API_URL = process.env.OLLAMA_API_URL || 'http://localhost:11434/api/generate';
-const MODEL_NAME = process.env.MODEL_NAME || 'gemma4:26b';
+const MODEL_NAME = process.env.MODEL_NAME || 'gemma4:26b-mlx';
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || '';
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
 

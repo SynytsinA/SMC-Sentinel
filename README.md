@@ -56,7 +56,7 @@ npm install
 The engine is currently tuned for the Gemma 4 (26B) model. It performs exceptionally well for analytical tasks and supports a large context window (up to 32k).
 ```bash
 # Pull and start the model locally
-ollama run gemma4:26b
+ollama run gemma4:26b-mlx
 ```
 
 ### 3. Environment Variables
@@ -64,7 +64,7 @@ Create a `.env` file in the root directory. You can use the provided `.env.examp
 
 ```env
 # Example .env configuration
-MODEL_NAME=gemma4:26b
+MODEL_NAME=gemma4:26b-mlx
 OLLAMA_API_URL=http://localhost:11434/api/generate
 TELEGRAM_TOKEN=your_telegram_bot_token_here
 TELEGRAM_CHAT_ID=your_personal_chat_id_here

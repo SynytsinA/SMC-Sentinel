@@ -66,10 +66,15 @@ export class OllamaService {
       Your analysis must be strictly short, algorithmic, and written in Ukrainian.
       You MUST always populate the "HTF Bias" and "LTF Context" fields to describe the current market state, regardless of whether a setup exists or not.
       
+      Strict Rule for LTF Context Tag:
+      - If the current price is > 0.5 Equilibrium, the tag MUST strictly be [Premium].
+      - If the current price is < 0.5 Equilibrium but NOT yet in OTE, the tag MUST strictly be [Discount].
+      - If the current price is < 0.5 Equilibrium AND strictly inside the 0.618 - 0.786 Fibo levels, the tag MUST strictly be [Discount (OTE Zone)].
+
       Format your response exactly as follows:
-      - HTF Bias (H1): [Bullish/Bearish/Consolidation] + current H1 POI or structure state
-      - LTF Context (M15): [Premium/Discount/OTE] + latest structural tracking (e.g., waiting for Confirmation #2, failed to mitigate FVG, etc.)
-      - Verdict: [Buy Limit / Sell Limit with precise price levels, SL, TP, and Risk-to-Reward ratio OR "No setup: [Write a concise 1-sentence reason in Ukrainian why the rules were violated]"] 
+      - HTF Bias (H1): [Bullish OR Bearish OR Consolidation] + current H1 POI or structure state
+      - LTF Context (M15): [Strictly use the validated tag from the rule above] — короткий опис поточної фази ринку (e.g., "ціна на хаях експансії, очікуємо відкат" або "ціна тестує новинний FVG") + стан підтверджень.
+      - Verdict: [Buy Limit / Sell Limit with precise price levels, SL, TP, and Risk-to-Reward ratio OR "No setup: [Write a concise 1-sentence reason in Ukrainian why the rules were violated]"]
   `;
 
   constructor(apiUrl: string, modelName: string) {

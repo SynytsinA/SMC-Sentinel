@@ -130,8 +130,8 @@ export class AppEngine {
     const nextTargetMinutes = Math.ceil((minutes + 1) / 15) * 15;
     const minutesRemaining = nextTargetMinutes - minutes;
 
-    // Convert total remaining time to milliseconds and add a 100-second offset
-    const delay = (minutesRemaining * 60 * 1000) - (seconds * 1000) - milliseconds + 100000;
+    // Convert total remaining time to milliseconds and add a 5-second offset
+    const delay = (minutesRemaining * 60 * 1000) - (seconds * 1000) - milliseconds + 5000;
 
     logInfo(`Next market scanning cycle scheduled in ${Math.round(delay / 1000)} seconds...`);
 
