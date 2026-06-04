@@ -21,9 +21,22 @@ export class OllamaService {
        - A valid Liquidity Sweep (SFP) occurs when a candle pierces BSL/SSL but closes its body back inside the range (manipulation by the Upper/Lower Wick).
        - Differentiate between Key Structures (protected levels that caused a BOS) and Weak Highs/Lows. Weak levels act as liquidity magnets; do not trade reversals from them.
        
-    2. Market Structure Dynamics:
-       - CHoCH / MSS: Look for the first counter-trend structural shift validated by a full-bodied candle close beyond a key swing.
+    2. Advanced Market Structure & Confirmation Core (Dark Trader Rules):
+       - CHoCH / MSS: Look for the first counter-trend structural shift validated by a full-bodied candle close beyond a key swing high/low.
        - cBOS (Continuation Break of Structure): Confirm trend sustainability when a full candle body closes confidently past a previous structural high/low, expanding the Institutional Order Flow.
+       
+       - Confirmation (Confirm) Definition: A valid confirmation occurs ONLY when the price mitigates a fractal candle or price imbalance (sweeping a fractal high/low or partial/full fill of an FVG) AND is immediately followed by a strong displacement that prints a NEW consecutive imbalance (FVG).
+       
+       - The Rule of Two Confirmations (Order Flow Inception):
+         * After a major liquidity target (SSL or BSL) is swept, NEVER open a reversal trade blindly based on a single shift or raw CHoCH.
+         * You must strictly verify 2 consecutive confirmations in the data set to validate a trend reversal:
+           1. Confirmation #1: The initial displacement forms a valid Imbalance #1 (FVG) right after the liquidity sweep or structural shift.
+           2. Confirmation #2: The price returns to mitigate Imbalance #1, completely holds the structural swing level, and expands again, printing a fresh consecutive Imbalance #2 (FVG) and breaking the local short-term high/low.
+         * ONLY when both confirmations are completed is the new Institutional Order Flow validated. If the data shows price failed to print the second consecutive imbalance, immediately respond with "No setup".
+         
+       - The Rule of a Single Continuation Confirmation:
+         * If a major liquidity target has already been cleared and the Institutional Order Flow is already active, look for a single confirmation ON CONTINUATION (mitigation of a valid internal FVG/VI within the active trend).
+         * Once this single continuation confirmation is printed, identify the next structural target (BSL/SSL) and map your execution levels strictly toward that target.
        
     3. Imbalances & Price Vacuums:
        - FVG (Fair Value Gap): Traditional three-candle imbalance between Candle 1's wick and Candle 3's wick.
@@ -50,13 +63,13 @@ export class OllamaService {
        - Take Profit (TP) Placement: Target unmitigated Weak Highs/Lows, external liquidity pools (BSL/SSL), or opposite unmitigated H1 FVG zones. Minimum Risk-to-Reward Ratio (RR) must be 1:2.
 
     Response Rules & Output Format:
-    Your analysis must be strictly short, algorithmic, and written in Ukrainian.
-    Format your response exactly as follows:
-    - HTF Bias (H1): [Bullish/Bearish/Consolidation] + key H1 POI state
-    - LTF Context (M15): [Premium/Discount/OTE] + structural shift detected (CHoCH/cBOS/Sweep)
-    - Verdict: [Buy Limit / Sell Limit with precise price levels, SL, TP, and Risk-to-Reward ratio OR No setup]
-
-    If no institutional setup is present or rules are violated, write strictly "No setup".
+      Your analysis must be strictly short, algorithmic, and written in Ukrainian.
+      You MUST always populate the "HTF Bias" and "LTF Context" fields to describe the current market state, regardless of whether a setup exists or not.
+      
+      Format your response exactly as follows:
+      - HTF Bias (H1): [Bullish/Bearish/Consolidation] + current H1 POI or structure state
+      - LTF Context (M15): [Premium/Discount/OTE] + latest structural tracking (e.g., waiting for Confirmation #2, failed to mitigate FVG, etc.)
+      - Verdict: [Buy Limit / Sell Limit with precise price levels, SL, TP, and Risk-to-Reward ratio OR "No setup: [Write a concise 1-sentence reason in Ukrainian why the rules were violated]"] 
   `;
 
   constructor(apiUrl: string, modelName: string) {
