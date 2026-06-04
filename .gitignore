@@ -30,4 +30,5 @@ Thumbs.db
 # Dynamic State Data
 subscribers.json
 latest_candles.json
+todays_high_impact_news.json
 

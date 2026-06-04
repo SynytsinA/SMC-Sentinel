@@ -1,6 +1,7 @@
 import { MarketDataService } from './MarketDataService.js';
 import { OllamaService } from './OllamaService.js';
 import { TelegramService } from './TelegramService.js';
+import { NewsService } from './NewsService.js';
 import { logInfo, logError } from '../utils/logger.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -9,6 +10,7 @@ export class AppEngine {
   private marketDataService: MarketDataService;
   private ollamaService: OllamaService;
   private telegramService: TelegramService;
+  private newsService: NewsService;
   private scanIntervalMs: number;
   private subscribers: Set<number> = new Set();
   private readonly SUBSCRIBERS_FILE = './subscribers.json';
@@ -22,6 +24,7 @@ export class AppEngine {
     this.marketDataService = marketDataService;
     this.ollamaService = ollamaService;
     this.telegramService = telegramService;
+    this.newsService = new NewsService();
     this.scanIntervalMs = scanIntervalMs;
   }
 
@@ -63,6 +66,9 @@ export class AppEngine {
 
     // Restore persistent state
     await this.loadSubscribers();
+
+    // Fetch and cache daily high-impact news on startup
+    await this.newsService.fetchAndCacheNews();
 
     // Register /analyze command in Telegram
     this.telegramService.registerAnalyzeCommand(async (chatId: number) => {
@@ -158,6 +164,9 @@ export class AppEngine {
         logInfo('Forex market is closed for the weekend. Skipping scanning cycle to save resources.');
         return;
       }
+
+      // Check and fetch daily high-impact news
+      await this.newsService.fetchAndCacheNews();
 
       const data = await this.marketDataService.fetchMarketData();
       if (data.candlesH1.length === 0 || data.candlesM15.length === 0) {

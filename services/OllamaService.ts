@@ -62,19 +62,6 @@ export class OllamaService {
          * For Shorts: Place SL strictly 1-2 pips ABOVE the protected Key High (Invalidation level) or the base of the BTS candle.
        - Take Profit (TP) Placement: Target unmitigated Weak Highs/Lows, external liquidity pools (BSL/SSL), or opposite unmitigated H1 FVG zones. Minimum Risk-to-Reward Ratio (RR) must be 1:2.
 
-    Response Rules & Output Format:
-      Your analysis must be strictly short, algorithmic, and written in Ukrainian.
-      You MUST always populate the "HTF Bias" and "LTF Context" fields to describe the current market state, regardless of whether a setup exists or not.
-      
-      Strict Rule for LTF Context Tag:
-      - If the current price is > 0.5 Equilibrium, the tag MUST strictly be [Premium].
-      - If the current price is < 0.5 Equilibrium but NOT yet in OTE, the tag MUST strictly be [Discount].
-      - If the current price is < 0.5 Equilibrium AND strictly inside the 0.618 - 0.786 Fibo levels, the tag MUST strictly be [Discount (OTE Zone)].
-
-      Format your response exactly as follows:
-      - HTF Bias (H1): [Bullish OR Bearish OR Consolidation] + current H1 POI or structure state
-      - LTF Context (M15): [Strictly use the validated tag from the rule above] — короткий опис поточної фази ринку (e.g., "ціна на хаях експансії, очікуємо відкат" або "ціна тестує новинний FVG") + стан підтверджень.
-      - Verdict: [Buy Limit / Sell Limit with precise price levels, SL, TP, and Risk-to-Reward ratio OR "No setup: [Write a concise 1-sentence reason in Ukrainian why the rules were violated]"]
   `;
 
   constructor(apiUrl: string, modelName: string) {
@@ -99,10 +86,26 @@ export class OllamaService {
       
       Conduct MTF market structure analysis using SMC strategy.`;
 
+      const responseFormat = `
+    Response Rules & Output Format:
+      Your analysis must be strictly short, algorithmic, and written in Ukrainian.
+      You MUST always populate the "HTF Bias" and "LTF Context" fields to describe the current market state, regardless of whether a setup exists or not.
+      
+      Strict Rule for LTF Context Tag:
+      - If the current price is > 0.5 Equilibrium, the tag MUST strictly be [Premium].
+      - If the current price is < 0.5 Equilibrium but NOT yet in OTE, the tag MUST strictly be [Discount].
+      - If the current price is < 0.5 Equilibrium AND strictly inside the 0.618 - 0.786 Fibo levels, the tag MUST strictly be [Discount (OTE Zone)].
+
+      Format your response exactly as follows:
+      - HTF Bias (H1): [Bullish OR Bearish OR Consolidation] + current H1 POI or structure state
+      - LTF Context (M15): [Strictly use the validated tag from the rule above] — короткий опис поточної фази ринку (e.g., "ціна на хаях експансії, очікуємо відкат" або "ціна тестує новинний FVG") + стан підтверджень.
+      - Verdict: [Buy Limit / Sell Limit with precise price levels, SL, TP, and Risk-to-Reward ratio OR "No setup: [Write a concise 1-sentence reason in Ukrainian why the rules were violated]"]
+      `;
+
       const payload: IOllamaRequest = {
         model: this.modelName,
         prompt: prompt,
-        system: this.systemInstruction,
+        system: this.systemInstruction + responseFormat,
         stream: false
       };
 
@@ -151,10 +154,17 @@ export class OllamaService {
       
       User Question: ${userPrompt}`;
 
+      const responseFormat = `
+    Response Rules & Output Format:
+      Answer the user's custom question or prompt directly and concisely in Ukrainian, using the market data as context.
+      Do NOT use the standard three-field format ("HTF Bias", "LTF Context", "Verdict") unless specifically requested by the user.
+      Answer in a free-form, conversational but professional trading response tailored exactly to the user's question.
+      `;
+
       const payload: IOllamaRequest = {
         model: this.modelName,
         prompt: prompt,
-        system: this.systemInstruction,
+        system: this.systemInstruction + responseFormat,
         stream: false
       };
 
