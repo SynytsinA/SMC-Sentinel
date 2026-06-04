@@ -80,7 +80,11 @@ export class AppEngine {
         return;
       }
 
-      const result = await this.ollamaService.analyze(data);
+      const todayNews = await this.newsService.fetchAndCacheNews();
+      const activeNews = this.newsService.getNewsInTimeWindow(todayNews, new Date(), 30);
+      const newsContext = this.newsService.formatNewsContext(activeNews) || undefined;
+
+      const result = await this.ollamaService.analyze(data, newsContext);
       this.telegramService.sendMessageToChat(chatId, `**On-demand Analysis:**\n\n${result.verdict}`);
     });
 
@@ -116,7 +120,11 @@ export class AppEngine {
         return;
       }
 
-      const reply = await this.ollamaService.analyzeWithCustomPrompt(data, text);
+      const todayNews = await this.newsService.fetchAndCacheNews();
+      const activeNews = this.newsService.getNewsInTimeWindow(todayNews, new Date(), 30);
+      const newsContext = this.newsService.formatNewsContext(activeNews) || undefined;
+
+      const reply = await this.ollamaService.analyzeWithCustomPrompt(data, text, newsContext);
       this.telegramService.sendMessageToChat(chatId, `**Custom Response:**\n\n${reply}`, false);
     });
 
@@ -168,7 +176,10 @@ export class AppEngine {
       }
 
       // Check and fetch daily high-impact news
-      await this.newsService.fetchAndCacheNews();
+      const todayNews = await this.newsService.fetchAndCacheNews();
+
+      const activeNews = this.newsService.getNewsInTimeWindow(todayNews, new Date(), 30);
+      const newsContext = this.newsService.formatNewsContext(activeNews) || undefined;
 
       const data = await this.marketDataService.fetchMarketData();
       if (data.candlesH1.length === 0 || data.candlesM15.length === 0) {
@@ -176,7 +187,7 @@ export class AppEngine {
         return;
       }
 
-      const result = await this.ollamaService.analyze(data);
+      const result = await this.ollamaService.analyze(data, newsContext);
 
       const message = `**SMC Periodic Update:**\n\n${result.verdict}`;
 

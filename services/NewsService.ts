@@ -73,4 +73,40 @@ export class NewsService {
       return [];
     }
   }
+
+  /**
+   * Returns news events that are scheduled within the given minutes window (before or after) the current time.
+   */
+  public getNewsInTimeWindow(todayNews: IForexNewsEvent[], now: Date = new Date(), minutesWindow: number = 30): IForexNewsEvent[] {
+    const nowMs = now.getTime();
+    const windowMs = minutesWindow * 60 * 1000;
+
+    return todayNews.filter(event => {
+      const eventMs = new Date(event.date).getTime();
+      const diffMs = Math.abs(eventMs - nowMs);
+      return diffMs <= windowMs;
+    });
+  }
+
+  /**
+   * Formats the list of news events into a clean text block with Kyiv timezone.
+   */
+  public formatNewsContext(newsEvents: IForexNewsEvent[]): string {
+    if (newsEvents.length === 0) return '';
+
+    let text = "⚠️ Увага! Виявлено важливі економічні новини у 30-хвилинному вікні (±30 хв від поточного часу):\n";
+    for (const event of newsEvents) {
+      const eventDate = new Date(event.date);
+      const timeStr = eventDate.toLocaleTimeString('uk-UA', {
+        timeZone: 'Europe/Kyiv',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      const forecastStr = event.forecast ? ` (Прогноз: ${event.forecast}, Попереднє: ${event.previous})` : '';
+      text += `- [${timeStr} Kyiv] [${event.impact}] [${event.country}] ${event.title}${forecastStr}\n`;
+    }
+    return text;
+  }
 }
+

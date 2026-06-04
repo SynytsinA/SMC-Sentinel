@@ -72,12 +72,13 @@ export class OllamaService {
   /**
    * Analyzes multi-timeframe market data using the local Ollama model.
    * @param marketData MTF market data (H1 and M15)
+   * @param newsContext Optional active news context to warn the model
    */
-  public async analyze(marketData: IMtfMarketData): Promise<ISMCAnalysisResult> {
+  public async analyze(marketData: IMtfMarketData, newsContext?: string): Promise<ISMCAnalysisResult> {
     try {
       logInfo(`Request sent to Ollama (${this.modelName})...`);
 
-      const prompt = `Here is the Multi-Timeframe market data (JSON):
+      let prompt = `Here is the Multi-Timeframe market data (JSON):
       --- H1 Candles (Global Bias & POI) ---
       ${JSON.stringify(marketData.candlesH1)}
       
@@ -85,6 +86,10 @@ export class OllamaService {
       ${JSON.stringify(marketData.candlesM15)}
       
       Conduct MTF market structure analysis using SMC strategy.`;
+
+      if (newsContext) {
+        prompt = `⚠️ ECONOMIC NEWS ALERT:\n${newsContext}\n\n${prompt}`;
+      }
 
       const responseFormat = `
     Response Rules & Output Format:
@@ -102,10 +107,22 @@ export class OllamaService {
       - Verdict: [Buy Limit / Sell Limit with precise price levels, SL, TP, and Risk-to-Reward ratio OR "No setup: [Write a concise 1-sentence reason in Ukrainian why the rules were violated]"]
       `;
 
+      let activeSystemInstruction = this.systemInstruction + responseFormat;
+
+      if (newsContext) {
+        activeSystemInstruction += `
+        
+        CRITICAL ECONOMIC NEWS RULE:
+        There are active high/medium impact economic news events near the current time.
+        1. You MUST explicitly warn the user about these news events inside the "Verdict" or "LTF Context" field (e.g., listing the news events and warning about high volatility and potential liquidity sweeps).
+        2. Adjust your risk assessment accordingly. If the news is extremely close (e.g., within 15-30 minutes), prefer "No setup" due to high risk of slippage and unpredictable news wicks, or clearly label the setup as HIGH RISK.
+        `;
+      }
+
       const payload: IOllamaRequest = {
         model: this.modelName,
         prompt: prompt,
-        system: this.systemInstruction + responseFormat,
+        system: activeSystemInstruction,
         stream: false
       };
 
@@ -140,19 +157,24 @@ export class OllamaService {
    * Analyzes multi-timeframe market data along with a custom user prompt using the local Ollama model.
    * @param marketData MTF market data (H1 and M15)
    * @param userPrompt The custom question or prompt from the user
+   * @param newsContext Optional active news context to warn the model
    */
-  public async analyzeWithCustomPrompt(marketData: IMtfMarketData, userPrompt: string): Promise<string> {
+  public async analyzeWithCustomPrompt(marketData: IMtfMarketData, userPrompt: string, newsContext?: string): Promise<string> {
     try {
       logInfo(`Custom request sent to Ollama (${this.modelName})...`);
 
-      const prompt = `Context (Multi-Timeframe Market Candles in JSON):
+      let prompt = `Context (Multi-Timeframe Market Candles in JSON):
       --- H1 Candles ---
       ${JSON.stringify(marketData.candlesH1)}
       
       --- M15 Candles ---
-      ${JSON.stringify(marketData.candlesM15)}
-      
-      User Question: ${userPrompt}`;
+      ${JSON.stringify(marketData.candlesM15)}`;
+
+      if (newsContext) {
+        prompt = `⚠️ ECONOMIC NEWS ALERT:\n${newsContext}\n\n${prompt}`;
+      }
+
+      prompt += `\n\nUser Question: ${userPrompt}`;
 
       const responseFormat = `
     Response Rules & Output Format:
@@ -161,10 +183,20 @@ export class OllamaService {
       Answer in a free-form, conversational but professional trading response tailored exactly to the user's question.
       `;
 
+      let activeSystemInstruction = this.systemInstruction + responseFormat;
+
+      if (newsContext) {
+        activeSystemInstruction += `
+        
+        CRITICAL ECONOMIC NEWS RULE:
+        There are active high/medium impact economic news events. You MUST explicitly mention/warn the user about these news events in your response, listing the events and warning about high volatility.
+        `;
+      }
+
       const payload: IOllamaRequest = {
         model: this.modelName,
         prompt: prompt,
-        system: this.systemInstruction + responseFormat,
+        system: activeSystemInstruction,
         stream: false
       };
 
