@@ -4,7 +4,7 @@ import { IForexNewsEvent, ITodaysNewsFile } from '../types.js';
 import { logInfo, logError } from '../utils/logger.js';
 
 export class NewsService {
-  private readonly NEWS_FILE = 'todays_high_impact_news.json';
+  private readonly NEWS_FILE = 'data/todays_high_impact_news.json';
   private readonly API_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
 
   private getKyivDateString(date: Date): string {
@@ -17,6 +17,8 @@ export class NewsService {
    */
   public async fetchAndCacheNews(): Promise<IForexNewsEvent[]> {
     const todayStr = this.getKyivDateString(new Date());
+
+    await fs.mkdir('data', { recursive: true });
 
     // 1. Try to read from cache
     try {

@@ -13,7 +13,7 @@ export class AppEngine {
   private newsService: NewsService;
   private scanIntervalMs: number;
   private subscribers: Set<number> = new Set();
-  private readonly SUBSCRIBERS_FILE = './subscribers.json';
+  private readonly SUBSCRIBERS_FILE = './data/subscribers.json';
 
   constructor(
     marketDataService: MarketDataService,
@@ -33,6 +33,7 @@ export class AppEngine {
    */
   private async loadSubscribers(): Promise<void> {
     try {
+      await fs.mkdir('data', { recursive: true });
       const data = await fs.readFile(this.SUBSCRIBERS_FILE, 'utf-8');
       const ids: number[] = JSON.parse(data);
       this.subscribers = new Set(ids);
@@ -51,6 +52,7 @@ export class AppEngine {
    */
   private async saveSubscribers(): Promise<void> {
     try {
+      await fs.mkdir('data', { recursive: true });
       const ids = Array.from(this.subscribers);
       await fs.writeFile(this.SUBSCRIBERS_FILE, JSON.stringify(ids, null, 2), 'utf-8');
     } catch (error) {

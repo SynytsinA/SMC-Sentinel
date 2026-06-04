@@ -79,6 +79,7 @@ export class MarketDataService {
 
         // Write the data to a JSON file for manual LLM analysis
         try {
+          await fs.mkdir('data', { recursive: true });
           const fetchedAtKyiv = new Date().toLocaleString('uk-UA', {
             timeZone: 'Europe/Kyiv'
           });
@@ -91,10 +92,10 @@ export class MarketDataService {
             candles_h1: fullyClosedH1,
             candles_m15: fullyClosedM15
           };
-          await fs.writeFile('latest_candles.json', JSON.stringify(fileContent, null, 2), 'utf-8');
-          logInfo('Latest candlestick data written to latest_candles.json');
+          await fs.writeFile('data/latest_candles.json', JSON.stringify(fileContent, null, 2), 'utf-8');
+          logInfo('Latest candlestick data written to data/latest_candles.json');
         } catch (writeError: any) {
-          logError('Failed to write market data to latest_candles.json:', writeError.message);
+          logError('Failed to write market data to data/latest_candles.json:', writeError.message);
         }
 
         return { candlesH1: fullyClosedH1, candlesM15: fullyClosedM15 };
