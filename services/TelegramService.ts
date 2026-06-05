@@ -98,6 +98,24 @@ export class TelegramService {
   }
 
   /**
+   * Registers a handler for the news command.
+   * @param callback Function to be called upon receiving the /news command
+   */
+  public registerNewsCommand(callback: (chatId: number) => Promise<void>): void {
+    this.bot.onText(/^\/news/, async (msg) => {
+      const chatId = msg.chat.id;
+      logInfo(`Received /news command from chat ${chatId}`);
+      try {
+        await callback(chatId);
+      } catch (error) {
+        logError('Error in /news command handler:', error);
+        await this.sendMessageToChat(chatId, 'An error occurred while fetching news.');
+      }
+    });
+  }
+
+
+  /**
    * Registers a handler for general text messages (custom prompts).
    * @param callback Function to be called upon receiving a non-command text message
    */

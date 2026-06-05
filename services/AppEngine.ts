@@ -88,6 +88,36 @@ export class AppEngine {
       this.telegramService.sendMessageToChat(chatId, `**On-demand Analysis:**\n\n${result.verdict}`);
     });
 
+    // Register /news command in Telegram
+    this.telegramService.registerNewsCommand(async (chatId: number) => {
+      const todayNews = await this.newsService.fetchAndCacheNews();
+
+      if (todayNews.length === 0) {
+        await this.telegramService.sendMessageToChat(
+          chatId,
+          "📅 **Економічний календар на сьогодні:**\n\nВажливих новин (High/Medium impact) по USD або EUR на сьогодні не заплановано. Очікується відносно спокійна поведінка ринку."
+        );
+        return;
+      }
+
+      let newsListText = "📅 **Економічний календар на сьогодні (EUR/USD):**\n\n";
+      for (const event of todayNews) {
+        const eventDate = new Date(event.date);
+        const timeStr = eventDate.toLocaleTimeString('uk-UA', {
+          timeZone: 'Europe/Kyiv',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+        const impactEmoji = event.impact === 'High' ? '🔴' : '🟡';
+        const forecastStr = event.forecast ? ` (Прогноз: ${event.forecast}, Попереднє: ${event.previous})` : '';
+        newsListText += `${impactEmoji} **[${timeStr} (Kyiv)]** [${event.country}] ${event.title}${forecastStr}\n`;
+      }
+
+      await this.telegramService.sendMessageToChat(chatId, newsListText);
+    });
+
+
     // Register /subscribe command
     this.telegramService.registerSubscribeCommand(async (chatId: number) => {
       if (this.subscribers.has(chatId)) {
