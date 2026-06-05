@@ -12,6 +12,8 @@ const OLLAMA_API_URL = process.env.OLLAMA_API_URL || 'http://localhost:11434/api
 const MODEL_NAME = process.env.MODEL_NAME || 'gemma4:26b-mlx';
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || '';
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || '';
+const OLLAMA_SYSTEM_INSTRUCTION = process.env.OLLAMA_SYSTEM_INSTRUCTION;
+const OLLAMA_RESPONSE_FORMAT = process.env.OLLAMA_RESPONSE_FORMAT;
 
 function bootstrap() {
   try {
@@ -23,7 +25,7 @@ function bootstrap() {
 
     // Initialize services
     const marketDataService = new MarketDataService();
-    const ollamaService = new OllamaService(OLLAMA_API_URL, MODEL_NAME);
+    const ollamaService = new OllamaService(OLLAMA_API_URL, MODEL_NAME, OLLAMA_SYSTEM_INSTRUCTION, OLLAMA_RESPONSE_FORMAT);
     const telegramService = new TelegramService(TELEGRAM_TOKEN, CHAT_ID);
 
     // Initialize the main engine (15 minutes)
