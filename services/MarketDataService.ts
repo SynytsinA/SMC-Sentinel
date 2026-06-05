@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import * as fs from 'fs/promises';
 import { ICandle, IMtfMarketData } from '../types.js';
 import { logInfo, logError } from '../utils/logger.js';
+import { calculateStructuralData } from '../utils/trading.js';
 
 export class MarketDataService {
   private apiClient: AxiosInstance;
@@ -45,7 +46,7 @@ export class MarketDataService {
             params: {
               symbol: 'EUR/USD',
               interval: '15min',
-              outputsize: 40,
+              outputsize: 80,
               order: 'ASC',
               timezone: 'UTC',
               apikey: apiKey
@@ -83,12 +84,14 @@ export class MarketDataService {
           const fetchedAtKyiv = new Date().toLocaleString('uk-UA', {
             timeZone: 'Europe/Kyiv'
           });
+          const deterministicData = calculateStructuralData({ candlesH1: fullyClosedH1, candlesM15: fullyClosedM15 });
           const fileContent = {
             info: "This file contains the latest market data for EUR/USD. Only fully closed candles are included. Time is formatted in Europe/Kyiv timezone.",
             symbol: "EUR/USD",
             fetched_at: fetchedAtKyiv,
             candles_h1_count: fullyClosedH1.length,
             candles_m15_count: fullyClosedM15.length,
+            deterministic_structural_data: deterministicData,
             candles_h1: fullyClosedH1,
             candles_m15: fullyClosedM15
           };

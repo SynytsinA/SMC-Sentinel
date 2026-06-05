@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { IMtfMarketData, IOllamaRequest, IOllamaResponse, ISMCAnalysisResult } from '../types.js';
+import { IMtfMarketData, IOllamaRequest, IOllamaResponse, ISMCAnalysisResult, IDeterministicStructuralData } from '../types.js';
 import { logInfo, logError } from '../utils/logger.js';
+import { calculateStructuralData } from '../utils/trading.js';
 
 export class OllamaService {
   private apiUrl: string;
@@ -27,14 +28,20 @@ export class OllamaService {
     try {
       logInfo(`Request sent to Ollama (${this.modelName})...`);
 
-      let prompt = `Here is the Multi-Timeframe market data (JSON):
+      const deterministicData = calculateStructuralData(marketData);
+
+      let prompt = `--- DETERMINISTIC STRUCTURAL DATA ---
+      ${JSON.stringify({ deterministic_structural_data: deterministicData }, null, 2)}
+
+      Here is the Multi-Timeframe market data (JSON):
       --- H1 Candles (Global Bias & POI) ---
       ${JSON.stringify(marketData.candlesH1)}
-      
+
       --- M15 Candles (Local Structure & Entry) ---
       ${JSON.stringify(marketData.candlesM15)}
-      
-      Conduct market analysis based on the provided data.`;
+
+      Conduct market analysis based on the provided data.
+      CRITICAL: You MUST strictly read and rely ONLY on the pre-calculated fields inside "deterministic_structural_data" for absolute highs, lows, equilibrium, and current market zone (Premium/Discount). Do NOT attempt to calculate or scan the H1/M15 candle arrays yourself to find these structural boundaries, as doing so may cause calculation errors due to context length. Use the provided "deterministic_structural_data" values for your output tags and strategy logic.`;
 
       if (newsContext) {
         prompt = `⚠️ ECONOMIC NEWS ALERT:\n${newsContext}\n\n${prompt}`;
@@ -52,6 +59,7 @@ export class OllamaService {
       }
 
       const payload: IOllamaRequest = {
+        deterministic_structural_data: deterministicData,
         model: this.modelName,
         prompt: prompt,
         system: activeSystemInstruction,
@@ -95,10 +103,15 @@ export class OllamaService {
     try {
       logInfo(`Custom request sent to Ollama (${this.modelName})...`);
 
-      let prompt = `Context (Multi-Timeframe Market Candles in JSON):
+      const deterministicData = calculateStructuralData(marketData);
+
+      let prompt = `--- DETERMINISTIC STRUCTURAL DATA ---
+      ${JSON.stringify({ deterministic_structural_data: deterministicData }, null, 2)}
+
+      Context (Multi-Timeframe Market Candles in JSON):
       --- H1 Candles ---
       ${JSON.stringify(marketData.candlesH1)}
-      
+
       --- M15 Candles ---
       ${JSON.stringify(marketData.candlesM15)}`;
 
@@ -106,7 +119,7 @@ export class OllamaService {
         prompt = `⚠️ ECONOMIC NEWS ALERT:\n${newsContext}\n\n${prompt}`;
       }
 
-      prompt += `\n\nUser Question: ${userPrompt}`;
+      prompt += `\n\nUser Question: ${userPrompt}\n\nCRITICAL instruction: For any market analysis, boundary calculations, or zone checks, you MUST strictly read and rely ONLY on the pre-calculated fields inside "deterministic_structural_data".`;
 
       const responseFormat = `
     Response Rules & Output Format:
@@ -126,6 +139,7 @@ export class OllamaService {
       }
 
       const payload: IOllamaRequest = {
+        deterministic_structural_data: deterministicData,
         model: this.modelName,
         prompt: prompt,
         system: activeSystemInstruction,

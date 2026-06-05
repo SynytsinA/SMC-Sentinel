@@ -12,12 +12,23 @@ export interface IMtfMarketData {
   candlesM15: ICandle[];
 }
 
+export interface IDeterministicStructuralData {
+  macro_key_high: number;
+  macro_key_low: number;
+  intraday_local_high: number;
+  intraday_local_low: number;
+  intraday_equilibrium: number;
+  current_market_zone: 'Premium' | 'Discount';
+}
+
 export interface IOllamaRequest {
+  deterministic_structural_data?: IDeterministicStructuralData;
   model: string;
   prompt: string;
   system: string;
   stream: boolean;
 }
+
 
 export interface IOllamaResponse {
   model: string;
