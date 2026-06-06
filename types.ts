@@ -5,6 +5,9 @@ export interface ICandle {
   high: number;
   low: number;
   close: number;
+  isFractalHigh?: boolean;
+  isFractalLow?: boolean;
+  fvg?: { type: 'Bullish' | 'Bearish'; top: number; bottom: number } | null;
 }
 
 export interface ITriTimeframeMarketData {

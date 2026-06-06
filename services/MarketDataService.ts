@@ -191,8 +191,50 @@ export class MarketDataService {
         open: Number(Number(open).toFixed(5)),
         high: Number(Number(high).toFixed(5)),
         low: Number(Number(low).toFixed(5)),
-        close: Number(Number(close).toFixed(5))
+        close: Number(Number(close).toFixed(5)),
+        isFractalHigh: false,
+        isFractalLow: false,
+        fvg: null
       });
+    }
+
+    const len = candles.length;
+    for (let i = 2; i < len; i++) {
+      // 5-candle Fractal calculation (requires i-2, i-1, i, i+1, i+2)
+      if (i < len - 2) {
+        if (
+          candles[i].high > candles[i - 2].high &&
+          candles[i].high > candles[i - 1].high &&
+          candles[i].high > candles[i + 1].high &&
+          candles[i].high > candles[i + 2].high
+        ) {
+          candles[i].isFractalHigh = true;
+        }
+
+        if (
+          candles[i].low < candles[i - 2].low &&
+          candles[i].low < candles[i - 1].low &&
+          candles[i].low < candles[i + 1].low &&
+          candles[i].low < candles[i + 2].low
+        ) {
+          candles[i].isFractalLow = true;
+        }
+      }
+
+      // FVG check (requires index i and i-2 to exist, stores in i-1)
+      if (candles[i].low > candles[i - 2].high) {
+        candles[i - 1].fvg = {
+          type: 'Bullish',
+          top: candles[i].low,
+          bottom: candles[i - 2].high
+        };
+      } else if (candles[i].high < candles[i - 2].low) {
+        candles[i - 1].fvg = {
+          type: 'Bearish',
+          top: candles[i - 2].low,
+          bottom: candles[i].high
+        };
+      }
     }
 
     return candles;
