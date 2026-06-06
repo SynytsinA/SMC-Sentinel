@@ -75,7 +75,7 @@ export class AppEngine {
     // Register /analyze command in Telegram
     this.telegramService.registerAnalyzeCommand(async (chatId: number) => {
       const data = await this.marketDataService.fetchMarketData();
-      if (data.candlesH1.length === 0 || data.candlesM15.length === 0) {
+      if (data.candlesH4.length === 0 || data.candlesM15.length === 0 || data.candlesM5.length === 0) {
         this.telegramService.sendMessageToChat(chatId, 'Error: failed to fetch market data.');
         return;
       }
@@ -145,7 +145,7 @@ export class AppEngine {
     // Register custom prompt handler in Telegram
     this.telegramService.registerCustomPromptHandler(async (chatId: number, text: string) => {
       const data = await this.marketDataService.fetchMarketData();
-      if (data.candlesH1.length === 0 || data.candlesM15.length === 0) {
+      if (data.candlesH4.length === 0 || data.candlesM15.length === 0 || data.candlesM5.length === 0) {
         this.telegramService.sendMessageToChat(chatId, 'Error: failed to fetch market data for your query.');
         return;
       }
@@ -212,7 +212,7 @@ export class AppEngine {
       const newsContext = this.newsService.formatNewsContext(activeNews) || undefined;
 
       const data = await this.marketDataService.fetchMarketData();
-      if (data.candlesH1.length === 0 || data.candlesM15.length === 0) {
+      if (data.candlesH4.length === 0 || data.candlesM15.length === 0 || data.candlesM5.length === 0) {
         logInfo('Market data not received, cycle skipped.');
         return;
       }

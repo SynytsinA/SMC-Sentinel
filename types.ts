@@ -7,17 +7,21 @@ export interface ICandle {
   close: number;
 }
 
-export interface IMtfMarketData {
-  candlesH1: ICandle[];
+export interface ITriTimeframeMarketData {
+  candlesH4: ICandle[];
   candlesM15: ICandle[];
+  candlesM5: ICandle[];
 }
 
 export interface IDeterministicStructuralData {
-  macro_key_high: number;
-  macro_key_low: number;
-  intraday_local_high: number;
-  intraday_local_low: number;
-  intraday_equilibrium: number;
+  htf_macro_high: number;
+  htf_macro_low: number;
+  htf_equilibrium: number;
+  mtf_dealing_high: number;
+  mtf_dealing_low: number;
+  mtf_equilibrium: number;
+  ltf_local_high: number;
+  ltf_local_low: number;
   current_market_zone: 'Premium' | 'Discount';
 }
 

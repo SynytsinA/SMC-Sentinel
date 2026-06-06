@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { IMtfMarketData, IOllamaRequest, IOllamaResponse, ISMCAnalysisResult, IDeterministicStructuralData } from '../types.js';
+import { ITriTimeframeMarketData, IOllamaRequest, IOllamaResponse, ISMCAnalysisResult, IDeterministicStructuralData } from '../types.js';
 import { logInfo, logError } from '../utils/logger.js';
 import { calculateStructuralData } from '../utils/trading.js';
 
@@ -24,7 +24,7 @@ export class OllamaService {
    * @param marketData MTF market data (H1 and M15)
    * @param newsContext Optional active news context to warn the model
    */
-  public async analyze(marketData: IMtfMarketData, newsContext?: string): Promise<ISMCAnalysisResult> {
+  public async analyze(marketData: ITriTimeframeMarketData, newsContext?: string): Promise<ISMCAnalysisResult> {
     try {
       logInfo(`Request sent to Ollama (${this.modelName})...`);
 
@@ -34,14 +34,17 @@ export class OllamaService {
       ${JSON.stringify({ deterministic_structural_data: deterministicData }, null, 2)}
 
       Here is the Multi-Timeframe market data (JSON):
-      --- H1 Candles (Global Bias & POI) ---
-      ${JSON.stringify(marketData.candlesH1)}
+      --- H4 Candles (Global Context & Macro Order Flow) ---
+      ${JSON.stringify(marketData.candlesH4)}
 
-      --- M15 Candles (Local Structure & Entry) ---
+      --- M15 Candles (Intraday Dealing Range & Context) ---
       ${JSON.stringify(marketData.candlesM15)}
 
+      --- M5 Candles (Precision Entry & Execution) ---
+      ${JSON.stringify(marketData.candlesM5)}
+
       Conduct market analysis based on the provided data.
-      CRITICAL: You MUST strictly read and rely ONLY on the pre-calculated fields inside "deterministic_structural_data" for absolute highs, lows, equilibrium, and current market zone (Premium/Discount). Do NOT attempt to calculate or scan the H1/M15 candle arrays yourself to find these structural boundaries, as doing so may cause calculation errors due to context length. Use the provided "deterministic_structural_data" values for your output tags and strategy logic.`;
+      CRITICAL: You MUST strictly read and rely ONLY on the pre-calculated fields inside "deterministic_structural_data" for absolute highs, lows, equilibrium, and current market zone (Premium/Discount). Do NOT attempt to calculate or scan the H4/M15/M5 candle arrays yourself to find these structural boundaries, as doing so may cause calculation errors due to context length. Use the provided "deterministic_structural_data" values for your output tags and strategy logic.`;
 
       if (newsContext) {
         prompt = `⚠️ ECONOMIC NEWS ALERT:\n${newsContext}\n\n${prompt}`;
@@ -95,11 +98,11 @@ export class OllamaService {
 
   /**
    * Analyzes multi-timeframe market data along with a custom user prompt using the local Ollama model.
-   * @param marketData MTF market data (H1 and M15)
+   * @param marketData 3-TF market data (H4, M15, M5)
    * @param userPrompt The custom question or prompt from the user
    * @param newsContext Optional active news context to warn the model
    */
-  public async analyzeWithCustomPrompt(marketData: IMtfMarketData, userPrompt: string, newsContext?: string): Promise<string> {
+  public async analyzeWithCustomPrompt(marketData: ITriTimeframeMarketData, userPrompt: string, newsContext?: string): Promise<string> {
     try {
       logInfo(`Custom request sent to Ollama (${this.modelName})...`);
 
@@ -109,11 +112,14 @@ export class OllamaService {
       ${JSON.stringify({ deterministic_structural_data: deterministicData }, null, 2)}
 
       Context (Multi-Timeframe Market Candles in JSON):
-      --- H1 Candles ---
-      ${JSON.stringify(marketData.candlesH1)}
+      --- H4 Candles ---
+      ${JSON.stringify(marketData.candlesH4)}
 
       --- M15 Candles ---
-      ${JSON.stringify(marketData.candlesM15)}`;
+      ${JSON.stringify(marketData.candlesM15)}
+
+      --- M5 Candles ---
+      ${JSON.stringify(marketData.candlesM5)}`;
 
       if (newsContext) {
         prompt = `⚠️ ECONOMIC NEWS ALERT:\n${newsContext}\n\n${prompt}`;
