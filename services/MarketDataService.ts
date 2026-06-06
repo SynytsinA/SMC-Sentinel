@@ -191,10 +191,7 @@ export class MarketDataService {
         open: Number(Number(open).toFixed(5)),
         high: Number(Number(high).toFixed(5)),
         low: Number(Number(low).toFixed(5)),
-        close: Number(Number(close).toFixed(5)),
-        isFractalHigh: false,
-        isFractalLow: false,
-        fvg: null
+        close: Number(Number(close).toFixed(5))
       });
     }
 
