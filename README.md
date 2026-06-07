@@ -1,84 +1,94 @@
-# 🛡️ SMC-Sentinel (Local SMC Trading Bot)
+# 🛡️ SMC-Sentinel (Local SMC Trading Bot & Open Claw Backend)
 
-> **Autonomous Forex market scanner powered by a locally hosted Large Language Model.**
+> **Autonomous Forex market scanner and API backend powered by a local Open Claw agent & Google Gemma 4.**
 
-SMC-Sentinel is a strictly typed, modular Node.js & TypeScript application designed to act as an autonomous Forex (EUR/USD) market scanner. It leverages the power of a **local LLM (Google Gemma 4 26B via Ollama)** to analyze real-time market structure utilizing **Smart Money Concepts (SMC)** based on the rigorous Dark Trader ruleset.
+SMC-Sentinel is a strictly typed, modular Node.js & TypeScript application designed to act as an autonomous Forex (EUR/USD) market scanner. It serves a high-performance market data API containerized with Docker, which is queried by a local **Open Claw Agent** utilizing a custom Ollama model (`gemma4-trading`) to analyze market structure based on the institutional Dark Trader Ruleset.
 
 ---
 
 ## ✨ Key Features
 
-*   🔒 **Local LLM Integration (Zero Cloud Cost & Privacy):**
-    Utilizes the highly capable Google Gemma 4 (26B parameters) locally on Apple Silicon (M-series Macs). This ensures zero API costs, absolute privacy of your trading strategies, and zero external dependencies on cloud providers like OpenAI or Anthropic.
-*   ⚡ **Lightning-Fast Real-Time Data Pipeline:**
-    Asynchronously fetches Multi-Timeframe (MTF) candlestick data (H1 and M15) from the public Binance REST API. Data is cleanly parsed into a strictly typed JSON array and synchronized with the Kyiv timezone for accurate institutional session analysis.
-*   🧠 **Advanced MTF SMC Strategy Engine:**
-    Equipped with a finely-tuned, Chain-of-Thought (CoT) system prompt designed to precisely identify critical market footprints across multiple timeframes (HTF Bias + LTF Entry Confirmation):
-    *   **Liquidity Sweeps (SFP):** Detection of stops being triggered at Equal Highs/Lows.
-    *   **Market Structure Shifts (MSS):** Identification of trend reversals via full-bodied structural breaks.
-    *   **Fair Value Gaps (FVG):** Pinpointing three-candle imbalances.
-    *   **Premium/Discount Zones:** Evaluating the 50% equilibrium of the current trading range (buys exclusively permitted in the Discount zone).
-*   📱 **Smart Telegram Subscriptions & UI:**
-    Provides an interactive subscription system (`/subscribe`, `/unsubscribe`) with persistent state storage. A Smart Scheduler dynamically synchronizes the scanning cycles to execute exactly at the close of 15-minute market intervals, sending real-time periodic updates to all active subscribers. It also supports on-demand manual analysis (`/analyze`) and custom conversational prompts.
+*   🤖 **Open Claw Agent Integration:**
+    Fully integrated with the Open Claw desktop agent framework. The agent runs locally using a customized Ollama model built directly from our provided `Modelfile`.
+*   🔌 **Enriched Market Data & News API:**
+    An Express.js backend serves clean, structured JSON endpoints:
+    *   `GET /api/market-data`: Fetches 3-timeframe (H4, M15, M5) candlestick data from Twelve Data and appends deterministic SMC structures (BOS, CHoCH, Premium/Discount zones, Equilibrium, and programmatic FVG/Fractal flags).
+    *   `GET /api/todays-high-impact-news`: Fetches Kyiv-time synchronized daily high and medium impact economic news events.
+*   🛠️ **Custom Agent Tools:**
+    Includes pre-registered Python script tools (`tools/get_market_data.py` and `tools/todays_high_impact_news.py`) that allow the Open Claw agent to dynamically consult the backend API to build market context.
+*   🐳 **Docker Infrastructure:**
+    The backend server is fully containerized for instant local deployment using Docker Compose, linking environment variables securely.
 
 ---
 
 ## 🏗️ Architecture
 
-The project strictly adheres to **Clean Architecture** principles, enforcing a clear Separation of Powers. The business logic is deeply decoupled into specialized service modules: `AppEngine`, `MarketDataService`, `OllamaService`, and `TelegramService`.
-
 ```mermaid
-graph LR
-    A[Market Data REST API] -->|Candlesticks JSON| B(Node.js App Engine)
-    B -->|SMC Prompt & JSON| C{Local Ollama API\nGemma 4 26B}
-    C -->|Analytical Verdict| B
-    B -->|Markdown Alerts| D[Telegram Bot API]
-    D --> E[User Mobile]
+graph TD
+    A[Twelve Data / News APIs] -->|Market Data & News| B(SMC Express Backend\nTypeScript / Docker)
+    C[Open Claw Agent\nOllama gemma4-trading] -->|Invokes| D[Python Tools\n/tools]
+    D -->|HTTP GET Requests| B
+    B -->|Enriched SMC JSON| D
+    D -->|Tool Results| C
+    C -->|Reversal/Continuation Setups| E[Telegram / Notifications]
 ```
-
-*Alternatively represented as a linear pipeline:*
-`Market API` ➔ `Node.js Core App Engine (TypeScript)` ➔ `Local Ollama REST API (Gemma 4)` ➔ `Telegram Bot API` ➔ `User Mobile`
 
 ---
 
 ## 🚀 Getting Started
 
-Deploying the SMC-Sentinel locally is straightforward.
+Follow these steps to run the backend API and launch the local agent.
 
 ### 1. Prerequisites & Installation
-Ensure you have Node.js and [Ollama](https://ollama.com/) installed on your machine.
+Ensure you have Node.js (v20+), Docker, and [Ollama](https://ollama.com/) installed on your machine.
+
 ```bash
 # Install Node.js dependencies
 npm install
 ```
 
-### 2. Configure Local LLM (Ollama)
-The engine is currently tuned for the Gemma 4 (26B) model. It performs exceptionally well for analytical tasks and supports a large context window (up to 32k).
-```bash
-# Pull and start the model locally
-ollama run gemma4:26b-mlx
-```
-
-### 3. Environment Variables
+### 2. Environment Configuration
 Create a `.env` file in the root directory. You can use the provided `.env.example` as a template.
 
 ```env
-# Example .env configuration
-MODEL_NAME=gemma4:26b-mlx
-OLLAMA_API_URL=http://localhost:11434/api/generate
-TELEGRAM_TOKEN=your_telegram_bot_token_here
-TELEGRAM_CHAT_ID=your_personal_chat_id_here
+PORT=3000
 TWELVE_DATA_API_KEY=your_twelve_data_api_key_here
+TELEGRAM_TOKEN=your_telegram_bot_token_here
 ```
 
-### 4. Build and Run
-Compile the TypeScript source code into standard ECMAScript Modules (ESM) and launch the App Engine.
+### 3. Spin Up the Backend API Server
+You can run the server directly or via Docker Compose.
+
+**Via Docker (Recommended):**
 ```bash
-# Clean the project, build the TypeScript files into the /dist folder
+# Build and run the server container
+npm run infra:up
+
+# To stop the container
+npm run infra:down
+```
+
+**Via Local Node.js:**
+```bash
+# Build TypeScript
 npm run build
 
-# Start the application
-npm start
+# Start backend server
+npm run start:server
+```
+The server will start listening at `http://localhost:3000`.
+
+### 4. Build the Local Trading LLM Model
+Ensure Ollama is running, then compile the custom model using the repository's `Modelfile`:
+```bash
+npm run model:build
+```
+This builds the `gemma4-trading` model from the base `gemma4` configuration with optimal context length and deterministic temperature.
+
+### 5. Launch the Open Claw Agent
+To start the Open Claw runtime with our newly built model:
+```bash
+npm run agent:start
 ```
 
 ---

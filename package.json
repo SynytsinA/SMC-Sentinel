@@ -1,7 +1,7 @@
 {
   "name": "smc-local-bot",
   "version": "1.0.0",
-  "description": "Autonomous Forex (EUR/USD) market monitoring bot driven by a local Gemma 4 LLM via Ollama and TypeScript.",
+  "description": "Autonomous Forex (EUR/USD) market monitoring backend server and Open Claw agent tools powered by a local Gemma 4 LLM.",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
