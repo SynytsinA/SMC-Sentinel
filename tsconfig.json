@@ -11,5 +11,5 @@
     "sourceMap": true,
     "declaration": true
   },
-  "include": ["index.ts", "services/**/*", "utils/**/*", "types.ts"]
+  "include": ["index.ts", "services/**/*", "utils/**/*", "types.ts", "src/**/*"]
 }

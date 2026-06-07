@@ -1,0 +1,12 @@
+{
+  "name": "get_market_data",
+  "description": "Fetches the latest 3-timeframe (H4, M15, M5) candlestick data and pre-calculated deterministic structural data for EUR/USD from the SMC backend.",
+  "parameters": {
+    "type": "object",
+    "properties": {}
+  },
+  "endpoint": {
+    "url": "http://localhost:3000/api/market-data",
+    "method": "GET"
+  }
+}

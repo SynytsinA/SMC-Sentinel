@@ -17,7 +17,11 @@ export class MarketDataService {
   /**
    * Fetches real-time multi-timeframe (H4 + M15 + M5) candlestick data for EUR/USD from Twelve Data API.
    */
-  public async fetchMarketData(): Promise<ITriTimeframeMarketData> {
+  public async fetchMarketData(
+    h4Size: number = 60,
+    m15Size: number = 96,
+    m5Size: number = 36
+  ): Promise<ITriTimeframeMarketData> {
     const apiKey = process.env.TWELVE_DATA_API_KEY;
     if (!apiKey) {
       logError('TWELVE_DATA_API_KEY is not defined in the environment variables.');
@@ -36,7 +40,7 @@ export class MarketDataService {
             params: {
               symbol: 'EUR/USD',
               interval: '4h',
-              outputsize: 60,
+              outputsize: h4Size + 10,
               order: 'ASC',
               timezone: 'UTC',
               apikey: apiKey
@@ -46,7 +50,7 @@ export class MarketDataService {
             params: {
               symbol: 'EUR/USD',
               interval: '15min',
-              outputsize: 96,
+              outputsize: m15Size + 10,
               order: 'ASC',
               timezone: 'UTC',
               apikey: apiKey
@@ -56,7 +60,7 @@ export class MarketDataService {
             params: {
               symbol: 'EUR/USD',
               interval: '5min',
-              outputsize: 36,
+              outputsize: m5Size + 10,
               order: 'ASC',
               timezone: 'UTC',
               apikey: apiKey
@@ -86,16 +90,21 @@ export class MarketDataService {
           ? parsedM5.slice(0, -1)
           : parsedM5;
 
+        // Slice to the requested sizes from the end of the arrays
+        const finalH4 = fullyClosedH4.slice(-h4Size);
+        const finalM15 = fullyClosedM15.slice(-m15Size);
+        const finalM5 = fullyClosedM5.slice(-m5Size);
+
         console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (H4) ===');
-        console.log(JSON.stringify(fullyClosedH4.slice(-3), null, 2));
+        console.log(JSON.stringify(finalH4.slice(-3), null, 2));
         console.log('========================================\n');
 
         console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (M15) ===');
-        console.log(JSON.stringify(fullyClosedM15.slice(-3), null, 2));
+        console.log(JSON.stringify(finalM15.slice(-3), null, 2));
         console.log('========================================\n');
 
         console.log('\n=== DEBUG: LAST 3 CANDLES SENT TO LLM (M5) ===');
-        console.log(JSON.stringify(fullyClosedM5.slice(-3), null, 2));
+        console.log(JSON.stringify(finalM5.slice(-3), null, 2));
         console.log('========================================\n');
 
         // Write the data to a JSON file for manual LLM analysis
@@ -105,21 +114,21 @@ export class MarketDataService {
             timeZone: 'Europe/Kyiv'
           });
           const deterministicData = calculateStructuralData({
-            candlesH4: fullyClosedH4,
-            candlesM15: fullyClosedM15,
-            candlesM5: fullyClosedM5
+            candlesH4: finalH4,
+            candlesM15: finalM15,
+            candlesM5: finalM5
           });
           const fileContent = {
             info: "This file contains the latest market data for EUR/USD. Only fully closed candles are included. Time is formatted in Europe/Kyiv timezone.",
             symbol: "EUR/USD",
             fetched_at: fetchedAtKyiv,
-            candles_h4_count: fullyClosedH4.length,
-            candles_m15_count: fullyClosedM15.length,
-            candles_m5_count: fullyClosedM5.length,
+            candles_h4_count: finalH4.length,
+            candles_m15_count: finalM15.length,
+            candles_m5_count: finalM5.length,
             deterministic_structural_data: deterministicData,
-            candles_h4: fullyClosedH4,
-            candles_m15: fullyClosedM15,
-            candles_m5: fullyClosedM5
+            candles_h4: finalH4,
+            candles_m15: finalM15,
+            candles_m5: finalM5
           };
           await fs.writeFile('data/latest_candles.json', JSON.stringify(fileContent, null, 2), 'utf-8');
           logInfo('Latest candlestick data written to data/latest_candles.json');
@@ -127,7 +136,7 @@ export class MarketDataService {
           logError('Failed to write market data to data/latest_candles.json:', writeError.message);
         }
 
-        return { candlesH4: fullyClosedH4, candlesM15: fullyClosedM15, candlesM5: fullyClosedM5 };
+        return { candlesH4: finalH4, candlesM15: finalM15, candlesM5: finalM5 };
       } catch (error: any) {
         attempt++;
         logError(`Attempt ${attempt} failed fetching MTF market data from Twelve Data:`, error.message);

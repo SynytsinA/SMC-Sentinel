@@ -1,0 +1,12 @@
+{
+  "name": "todays_high_impact_news",
+  "description": "Fetches the today's high and medium impact economic news events for EUR/USD from the SMC backend.",
+  "parameters": {
+    "type": "object",
+    "properties": {}
+  },
+  "endpoint": {
+    "url": "http://localhost:3000/api/todays-high-impact-news",
+    "method": "GET"
+  }
+}
