@@ -6,7 +6,10 @@ services:
     container_name: smc-backend
     ports:
       - "3000:3000"
+    volumes:
+      - ./data:/app/data
     environment:
       - PORT=3000
       - TWELVE_DATA_API_KEY=${TWELVE_DATA_API_KEY}
     restart: unless-stopped
+
