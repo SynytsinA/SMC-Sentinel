@@ -26,6 +26,22 @@ export interface IDeterministicStructuralData {
   ltf_local_high: number;
   ltf_local_low: number;
   current_market_zone: 'Premium' | 'Discount';
+  ote_long_entry_062?: number;
+  ote_long_entry_0705?: number;
+  ote_long_sl?: number;
+  ote_long_tp?: number;
+  ote_long_rr_062?: number;
+  ote_long_rr_0705?: number;
+  ote_long_order_type_062?: 'Buy Limit' | 'Buy Stop';
+  ote_long_order_type_0705?: 'Buy Limit' | 'Buy Stop';
+  ote_short_entry_062?: number;
+  ote_short_entry_0705?: number;
+  ote_short_sl?: number;
+  ote_short_tp?: number;
+  ote_short_rr_062?: number;
+  ote_short_rr_0705?: number;
+  ote_short_order_type_062?: 'Sell Limit' | 'Sell Stop';
+  ote_short_order_type_0705?: 'Sell Limit' | 'Sell Stop';
 }
 
 export interface IOllamaRequest {

@@ -72,21 +72,21 @@ export class MarketDataService {
         const parsedM15 = this.parseTwelveData(m15Response.data);
         const parsedM5 = this.parseTwelveData(m5Response.data);
 
-        const now = new Date();
-        const currentH4Start = Math.floor(now.getTime() / (4 * 60 * 60 * 1000)) * (4 * 60 * 60 * 1000);
-        const currentM15Start = Math.floor(now.getTime() / (15 * 60 * 1000)) * (15 * 60 * 1000);
-        const currentM5Start = Math.floor(now.getTime() / (5 * 60 * 1000)) * (5 * 60 * 1000);
+        const nowMs = Date.now();
+        const H4_DURATION = 4 * 60 * 60 * 1000;
+        const M15_DURATION = 15 * 60 * 1000;
+        const M5_DURATION = 5 * 60 * 1000;
 
-        // If the last candle belongs to the currently forming interval, slice it off.
-        const fullyClosedH4 = parsedH4.length > 0 && parsedH4[parsedH4.length - 1].timestamp >= currentH4Start
+        // If the last candle belongs to the currently forming interval (not fully closed), slice it off.
+        const fullyClosedH4 = parsedH4.length > 0 && (parsedH4[parsedH4.length - 1].timestamp + H4_DURATION > nowMs)
           ? parsedH4.slice(0, -1)
           : parsedH4;
 
-        const fullyClosedM15 = parsedM15.length > 0 && parsedM15[parsedM15.length - 1].timestamp >= currentM15Start
+        const fullyClosedM15 = parsedM15.length > 0 && (parsedM15[parsedM15.length - 1].timestamp + M15_DURATION > nowMs)
           ? parsedM15.slice(0, -1)
           : parsedM15;
 
-        const fullyClosedM5 = parsedM5.length > 0 && parsedM5[parsedM5.length - 1].timestamp >= currentM5Start
+        const fullyClosedM5 = parsedM5.length > 0 && (parsedM5[parsedM5.length - 1].timestamp + M5_DURATION > nowMs)
           ? parsedM5.slice(0, -1)
           : parsedM5;
 
